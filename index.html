@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <title>PulseX Mini App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Telegram Mini App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
@@ -56,39 +54,24 @@
   <div class="card">
     <h2>🔥 PulseX Airdrop</h2>
     <p>Daily Claim: <b>100 Points</b></p>
-
     <button id="claimBtn">CLAIM</button>
     <div id="status">Waiting...</div>
   </div>
 
 <script>
-  // Safe Telegram initialization
-  let tg = null;
-
-  if (window.Telegram && window.Telegram.WebApp) {
-    tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
-  }
-
-  document.getElementById("claimBtn").addEventListener("click", () => {
-    if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) {
-      document.getElementById("status").innerText =
-        "⚠️ Open this app inside Telegram";
-      return;
-    }
-
-    const userId = tg.initDataUnsafe.user.id;
-
-    <script>
   const statusEl = document.getElementById("status");
   const btn = document.getElementById("claimBtn");
 
   function getTelegramUserId() {
-    if (!window.Telegram || !Telegram.WebApp || !Telegram.WebApp.initDataUnsafe?.user) {
-      return null;
+    if (
+      window.Telegram &&
+      Telegram.WebApp &&
+      Telegram.WebApp.initDataUnsafe &&
+      Telegram.WebApp.initDataUnsafe.user
+    ) {
+      return Telegram.WebApp.initDataUnsafe.user.id;
     }
-    return Telegram.WebApp.initDataUnsafe.user.id;
+    return null;
   }
 
   if (window.Telegram && Telegram.WebApp) {
@@ -96,7 +79,7 @@
     Telegram.WebApp.expand();
   }
 
-  btn.onclick = async () => {
+  btn.addEventListener("click", async () => {
     statusEl.innerText = "⏳ Sending claim...";
 
     const userId = getTelegramUserId();
@@ -122,6 +105,8 @@
       } else if (data.remaining) {
         const hrs = Math.ceil(data.remaining / 3600);
         statusEl.innerText = `⏳ Come back in ${hrs}h`;
+      } else if (data.error) {
+        statusEl.innerText = `❌ ${data.error}`;
       } else {
         statusEl.innerText = "❌ Claim failed";
       }
@@ -129,5 +114,8 @@
     } catch (err) {
       statusEl.innerText = "❌ Network error";
     }
-  };
+  });
 </script>
+
+</body>
+</html>
