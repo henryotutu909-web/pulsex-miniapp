@@ -1,198 +1,203 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>PulseX Mini App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>PulseX</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
     body {
-      background:#0f172a;
-      color:white;
-      font-family:Arial, sans-serif;
       margin:0;
-      padding:0;
+      font-family:Arial, sans-serif;
+      background: linear-gradient(135deg,#0f172a,#020617);
+      color:white;
     }
-    .card {
-      padding:20px;
-      max-width:420px;
-      margin:auto;
-    }
-    .box {
+
+    .nav {
+      display:flex;
+      justify-content:space-around;
+      padding:10px;
       background:#020617;
-      padding:14px;
-      border-radius:12px;
-      margin-top:14px;
     }
-    button {
-      width:100%;
-      padding:14px;
-      margin-top:10px;
+
+    .nav button {
+      flex:1;
+      margin:4px;
+      padding:10px;
       border:none;
       border-radius:10px;
-      font-size:16px;
+      background:#1e293b;
+      color:white;
       cursor:pointer;
     }
-    .green { background:#22c55e; color:black; }
-    .blue { background:#3b82f6; color:white; }
+
+    .nav button.active {
+      background:#22c55e;
+      color:black;
+    }
+
+    .page {
+      display:none;
+      padding:20px;
+      animation: fade 0.4s ease-in;
+    }
+
+    .page.active {
+      display:block;
+    }
+
+    @keyframes fade {
+      from { opacity:0; transform:translateY(10px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+
+    .card {
+      background:#020617;
+      padding:16px;
+      border-radius:14px;
+      margin-bottom:14px;
+      box-shadow:0 0 15px rgba(34,197,94,0.15);
+    }
+
+    .big {
+      font-size:28px;
+      font-weight:bold;
+      color:#22c55e;
+      animation:pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%{opacity:1;}
+      50%{opacity:.6;}
+      100%{opacity:1;}
+    }
+
+    button.main {
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:12px;
+      background:#22c55e;
+      color:black;
+      font-size:16px;
+      margin-top:10px;
+      cursor:pointer;
+    }
+
     input {
       width:100%;
       padding:10px;
       border-radius:8px;
       border:none;
       margin-top:8px;
-      font-size:13px;
-    }
-    #status {
-      margin-top:10px;
-      font-size:14px;
-      opacity:0.9;
     }
   </style>
 </head>
 
 <body>
 
-<div class="card">
-  <h2>🔥 PulseX</h2>
+<div class="nav">
+  <button onclick="show('dash')" class="active">🏠 Dashboard</button>
+  <button onclick="show('board')">🏆 Leaderboard</button>
+  <button onclick="show('airdrop')">🪂 Airdrop</button>
+</div>
 
-  <!-- USER STATS -->
-  <div class="box">
-    <b>Points:</b> <span id="points">0</span><br>
-    <b>Referrals:</b> <span id="refs">0</span>
+<!-- DASHBOARD -->
+<div id="dash" class="page active">
+  <div class="card">
+    <div>Points</div>
+    <div class="big" id="points">0</div>
+    <div>Referrals: <b id="refs">0</b></div>
   </div>
 
-  <!-- CLAIM -->
-  <button id="claimBtn" class="green">CLAIM</button>
-  <div id="status">Waiting...</div>
+  <button class="main" onclick="claim()">CLAIM</button>
+  <div id="status"></div>
 
-  <!-- REFERRAL -->
-  <div class="box">
+  <div class="card">
     <h3>🤝 Invite Friends</h3>
-    <p style="font-size:13px;opacity:0.8;">
-      Earn more points when friends join using your link.
-    </p>
-    <input id="refLink" readonly />
-    <button id="copyBtn" class="blue">Copy Referral Link</button>
+    <input id="refLink" readonly>
+    <button class="main" onclick="copy()">Copy Referral Link</button>
   </div>
+</div>
 
-  <!-- LEADERBOARD -->
-  <div class="box">
-    <h3>🏆 Leaderboard</h3>
+<!-- LEADERBOARD -->
+<div id="board" class="page">
+  <div class="card">
+    <h2>🏆 Top Users</h2>
     <div id="leaderboard">Loading...</div>
   </div>
+</div>
 
-  <!-- AIRDROP -->
-  <div class="box">
-    <h3>🪂 Airdrop</h3>
-    <p>Coming soon. Early users will be prioritized.</p>
+<!-- AIRDROP -->
+<div id="airdrop" class="page">
+  <div class="card">
+    <h2 class="big">🪂 Airdrop</h2>
+    <p>Coming Soon</p>
+    <p>Early users & referrers will receive higher allocation.</p>
+    <div style="font-size:40px; text-align:center; animation:pulse 1.5s infinite;">🎉</div>
   </div>
 </div>
 
 <script>
-  const BACKEND = "https://pulsex-backend-iqcp.onrender.com";
+const BACKEND = "https://pulsex-backend-iqcp.onrender.com";
 
-  const statusEl = document.getElementById("status");
-  const pointsEl = document.getElementById("points");
-  const refsEl = document.getElementById("refs");
-  const claimBtn = document.getElementById("claimBtn");
-  const refInput = document.getElementById("refLink");
-  const copyBtn = document.getElementById("copyBtn");
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
 
-  // Telegram init
-  if (window.Telegram && Telegram.WebApp) {
-    Telegram.WebApp.ready();
-    Telegram.WebApp.expand();
-  }
+const uid = Telegram.WebApp.initDataUnsafe?.user?.id;
+const uname = Telegram.WebApp.initDataUnsafe?.user?.username;
+const ref = Telegram.WebApp.initDataUnsafe?.start_param;
 
-  function getUserId() {
-    return Telegram.WebApp?.initDataUnsafe?.user?.id || null;
-  }
+document.getElementById("refLink").value =
+  uid ? `https://t.me/pulsex_airdrop_bot?start=${uid}` : "";
 
-  function getReferrerId() {
-    return Telegram.WebApp?.initDataUnsafe?.start_param || null;
-  }
+function show(id) {
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  event.target.classList.add("active");
+}
 
-  const userId = getUserId();
-  const referrerId = getReferrerId();
-
-  // Generate referral link
-  if (userId) {
-    refInput.value = `https://t.me/YOUR_BOT_USERNAME?start=${userId}`;
-  } else {
-    refInput.value = "Open app via Telegram bot";
-  }
-
-  copyBtn.onclick = () => {
-    refInput.select();
-    document.execCommand("copy");
-    statusEl.innerText = "✅ Referral link copied";
-  };
-
-  // CLAIM
-  claimBtn.onclick = async () => {
-    if (!userId) {
-      statusEl.innerText = "⚠️ Open this app from Telegram";
-      return;
-    }
-
-    statusEl.innerText = "⏳ Claiming...";
-
-    try {
-      const res = await fetch(`${BACKEND}/claim`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: userId,
-          referrer_id: referrerId
-        })
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        statusEl.innerText = "✅ Claimed +100 points";
-      } else if (data.remaining) {
-        const hrs = Math.ceil(data.remaining / 3600);
-        statusEl.innerText = `⏳ Come back in ${hrs}h`;
-      } else if (data.error) {
-        statusEl.innerText = `❌ ${data.error}`;
-      } else {
-        statusEl.innerText = "❌ Claim failed";
-      }
-
-      loadMe();
-      loadLeaderboard();
-
-    } catch (e) {
-      statusEl.innerText = "❌ Network error";
-    }
-  };
-
-  // LOAD USER DATA
-  async function loadMe() {
-    if (!userId) return;
-    const res = await fetch(`${BACKEND}/me`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: userId })
-    });
-    const data = await res.json();
-    pointsEl.innerText = data.points ?? 0;
-    refsEl.innerText = data.referrals ?? 0;
-  }
-
-  // LEADERBOARD
-  async function loadLeaderboard() {
-    const res = await fetch(`${BACKEND}/leaderboard`);
-    const data = await res.json();
-    document.getElementById("leaderboard").innerHTML =
-      data.map(x => `${x.rank}. ${x.user} — ${x.points}`).join("<br>");
-  }
-
+async function claim() {
+  document.getElementById("status").innerText = "⏳ Claiming...";
+  const r = await fetch(`${BACKEND}/claim`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ user_id:uid, username:uname, referrer_id:ref })
+  });
+  const d = await r.json();
+  document.getElementById("status").innerText =
+    d.success ? "✅ Claimed!" : "⏳ Cooldown active";
   loadMe();
-  loadLeaderboard();
+  loadBoard();
+}
+
+async function loadMe() {
+  const r = await fetch(`${BACKEND}/me`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ user_id:uid })
+  });
+  const d = await r.json();
+  document.getElementById("points").innerText = d.points;
+  document.getElementById("refs").innerText = d.referrals;
+}
+
+async function loadBoard() {
+  const r = await fetch(`${BACKEND}/leaderboard`);
+  const d = await r.json();
+  document.getElementById("leaderboard").innerHTML =
+    d.map(x=>`${x.rank}. @${x.username} — ${x.points}`).join("<br>");
+}
+
+function copy(){
+  const i=document.getElementById("refLink");
+  i.select();document.execCommand("copy");
+}
+
+loadMe();
+loadBoard();
 </script>
 
 </body>
