@@ -55,8 +55,39 @@
     <h2>🔥 PulseX Airdrop</h2>
     <p>Daily Claim: <b>100 Points</b></p>
     <button id="claimBtn">CLAIM</button>
-    <div id="status">Waiting...</div>
-  </div>
+<div id="status">Waiting...</div>
+
+<hr style="margin:20px 0; opacity:0.2;">
+
+<h3 style="margin-bottom:8px;">🤝 Invite Friends</h3>
+<p style="font-size:13px; opacity:0.8;">
+Earn more points when friends join using your link.
+</p>
+
+<input
+  id="refLink"
+  readonly
+  style="
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    margin-top:10px;
+    font-size:13px;
+  "
+/>
+
+<button
+  id="copyBtn"
+  style="
+    background:#3b82f6;
+    color:white;
+    margin-top:10px;
+  "
+>
+Copy Referral Link
+</button>
+
 
 <script>
   const statusEl = document.getElementById("status");
@@ -119,3 +150,4 @@
 
 </body>
 </html>
+
