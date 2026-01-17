@@ -1,72 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>PulseX Mini App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      background:#0f172a;
+      color:white;
+      font-family:Arial;
+      margin:0;
+      padding:0;
     }
-
     .card {
-      background: #020617;
-      padding: 24px;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 360px;
-      text-align: center;
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      padding:20px;
+      max-width:420px;
+      margin:auto;
     }
-
     button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 12px;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      cursor: pointer;
+      width:100%;
+      padding:14px;
+      margin-top:10px;
+      border:none;
+      border-radius:10px;
+      font-size:16px;
+      cursor:pointer;
     }
-
-    #claimBtn {
-      background: #22c55e;
-      color: black;
-    }
-
-    #copyBtn {
-      background: #3b82f6;
-      color: white;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      margin-top: 10px;
-      font-size: 13px;
-    }
-
-    #status {
-      margin-top: 12px;
-      font-size: 14px;
-      opacity: 0.9;
-    }
-
-    hr {
-      margin: 20px 0;
-      opacity: 0.2;
+    .green { background:#22c55e; color:black; }
+    .blue { background:#3b82f6; color:white; }
+    .box {
+      background:#020617;
+      padding:14px;
+      border-radius:12px;
+      margin-top:14px;
     }
   </style>
 </head>
@@ -74,98 +42,92 @@
 <body>
 
 <div class="card">
-  <h2>🔥 PulseX Airdrop</h2>
-  <p>Daily Claim: <b>100 Points</b></p>
+  <h2>🔥 PulseX</h2>
 
-  <button id="claimBtn">CLAIM</button>
-  <div id="status">Waiting...</div>
+  <div class="box">
+    <b>Points:</b> <span id="points">0</span><br>
+    <b>Referrals:</b> <span id="refs">0</span>
+  </div>
 
-  <hr>
+  <button id="claimBtn" class="green">CLAIM</button>
+  <div id="status"></div>
 
-  <h3>🤝 Invite Friends</h3>
-  <p style="font-size:13px; opacity:0.8;">
-    Earn more points when friends join using your link.
-  </p>
+  <div class="box">
+    <h3>🤝 Referral</h3>
+    <input id="refLink" readonly style="width:100%;padding:8px;border-radius:6px;">
+    <button id="copyBtn" class="blue">Copy Link</button>
+  </div>
 
-  <input id="refLink" readonly />
-  <button id="copyBtn">Copy Referral Link</button>
+  <div class="box">
+    <h3>🏆 Leaderboard</h3>
+    <div id="leaderboard">Loading...</div>
+  </div>
+
+  <div class="box">
+    <h3>🪂 Airdrop</h3>
+    <p>Coming soon. Early users will be prioritized.</p>
+  </div>
 </div>
 
 <script>
-  const statusEl = document.getElementById("status");
-  const claimBtn = document.getElementById("claimBtn");
-  const refInput = document.getElementById("refLink");
-  const copyBtn = document.getElementById("copyBtn");
+const BACKEND = "https://pulsex-backend-iqcp.onrender.com";
+const statusEl = document.getElementById("status");
+const pointsEl = document.getElementById("points");
+const refsEl = document.getElementById("refs");
 
-  function getTelegramUserId() {
-    if (
-      window.Telegram &&
-      Telegram.WebApp &&
-      Telegram.WebApp.initDataUnsafe &&
-      Telegram.WebApp.initDataUnsafe.user
-    ) {
-      return Telegram.WebApp.initDataUnsafe.user.id;
-    }
-    return null;
-  }
+function userId() {
+  return Telegram.WebApp?.initDataUnsafe?.user?.id || null;
+}
 
-  if (window.Telegram && Telegram.WebApp) {
-    Telegram.WebApp.ready();
-    Telegram.WebApp.expand();
-  }
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
 
-  // Generate referral link
-  const userId = getTelegramUserId();
-  if (userId) {
-    refInput.value = `https://t.me/pulsex_airdrop_bot?start=${userId}`;
-  } else {
-    refInput.value = "Open app via Telegram bot";
-  }
+const uid = userId();
+document.getElementById("refLink").value =
+  uid ? `https://t.me/pulsex_airdrop_bot?start=${uid}` : "";
 
-  // Claim logic
-  claimBtn.addEventListener("click", async () => {
-    statusEl.innerText = "⏳ Sending claim...";
+document.getElementById("copyBtn").onclick = () => {
+  document.getElementById("refLink").select();
+  document.execCommand("copy");
+  statusEl.innerText = "✅ Link copied";
+};
 
-    const userId = getTelegramUserId();
-    if (!userId) {
-      statusEl.innerText = "⚠️ Open this app from Telegram";
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        "https://pulsex-backend-iqcp.onrender.com/claim",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: userId })
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.success) {
-        statusEl.innerText = "✅ Claimed +100 points";
-      } else if (data.remaining) {
-        const hrs = Math.ceil(data.remaining / 3600);
-        statusEl.innerText = `⏳ Come back in ${hrs}h`;
-      } else if (data.error) {
-        statusEl.innerText = `❌ ${data.error}`;
-      } else {
-        statusEl.innerText = "❌ Claim failed";
-      }
-
-    } catch (err) {
-      statusEl.innerText = "❌ Network error";
-    }
+// ---------- CLAIM ----------
+document.getElementById("claimBtn").onclick = async () => {
+  statusEl.innerText = "⏳ Claiming...";
+  const r = await fetch(`${BACKEND}/claim`, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ user_id: uid })
   });
+  const d = await r.json();
+  if (d.success) statusEl.innerText = "✅ Claimed +100";
+  else if (d.remaining) statusEl.innerText = "⏳ Cooldown active";
+  loadMe();
+};
 
-  // Copy referral link
-  copyBtn.addEventListener("click", () => {
-    refInput.select();
-    document.execCommand("copy");
-    statusEl.innerText = "✅ Referral link copied!";
+// ---------- LOAD USER ----------
+async function loadMe() {
+  const r = await fetch(`${BACKEND}/me`, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ user_id: uid })
   });
+  const d = await r.json();
+  pointsEl.innerText = d.points;
+  refsEl.innerText = d.referrals;
+}
+
+// ---------- LEADERBOARD ----------
+async function loadLeaderboard() {
+  const r = await fetch(`${BACKEND}/leaderboard`);
+  const d = await r.json();
+  document.getElementById("leaderboard").innerHTML =
+    d.map(x => `${x.rank}. ${x.username} — ${x.points}`).join("<br>");
+}
+
+loadMe();
+loadLeaderboard();
 </script>
 
 </body>
