@@ -80,10 +80,56 @@
 
     const userId = tg.initDataUnsafe.user.id;
 
-    document.getElementById("status").innerText =
-      "✅ Claim registered (backend coming next)";
+    <script>
+  let tg = null;
+
+  if (window.Telegram && window.Telegram.WebApp) {
+    tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+  }
+
+  const statusEl = document.getElementById("status");
+  const btn = document.getElementById("claimBtn");
+
+  btn.addEventListener("click", async () => {
+    if (!tg || !tg.initDataUnsafe?.user) {
+      statusEl.innerText = "⚠️ Open inside Telegram";
+      return;
+    }
+
+    btn.disabled = true;
+    statusEl.innerText = "⏳ Processing claim...";
+
+    try {
+      const res = await fetch(
+        "https://pulsex-backend-iqcp.onrender.com/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: tg.initDataUnsafe.user.id
+          })
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        statusEl.innerText = "✅ Claimed +100 points";
+      } else if (data.remaining) {
+        const hours = Math.ceil(data.remaining / 3600);
+        statusEl.innerText = `⏳ Come back in ${hours}h`;
+      } else {
+        statusEl.innerText = "⚠️ Claim failed";
+      }
+
+    } catch (e) {
+      statusEl.innerText = "❌ Server error";
+    }
+
+    btn.disabled = false;
   });
 </script>
 
-</body>
-</html>
+
