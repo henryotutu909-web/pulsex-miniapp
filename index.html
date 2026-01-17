@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PulseX Mini App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Telegram Mini App SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: #020617;
+      padding: 24px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      background: #22c55e;
+      color: black;
+      cursor: pointer;
+    }
+
+    #status {
+      margin-top: 12px;
+      font-size: 14px;
+      opacity: 0.85;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <h2>🔥 PulseX Airdrop</h2>
+    <p>Daily Claim: <b>100 Points</b></p>
+
+    <button id="claimBtn">CLAIM</button>
+    <div id="status">Waiting...</div>
+  </div>
+
+<script>
+  // Safe Telegram initialization
+  let tg = null;
+
+  if (window.Telegram && window.Telegram.WebApp) {
+    tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+  }
+
+  document.getElementById("claimBtn").addEventListener("click", () => {
+    if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) {
+      document.getElementById("status").innerText =
+        "⚠️ Open this app inside Telegram";
+      return;
+    }
+
+    const userId = tg.initDataUnsafe.user.id;
+
+    document.getElementById("status").innerText =
+      "✅ Claim registered (backend coming next)";
+  });
+</script>
+
+</body>
+</html>
