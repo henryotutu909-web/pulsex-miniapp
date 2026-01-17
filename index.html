@@ -32,66 +32,70 @@
     button {
       width: 100%;
       padding: 14px;
-      margin-top: 16px;
+      margin-top: 12px;
       border: none;
       border-radius: 10px;
       font-size: 16px;
+      cursor: pointer;
+    }
+
+    #claimBtn {
       background: #22c55e;
       color: black;
-      cursor: pointer;
+    }
+
+    #copyBtn {
+      background: #3b82f6;
+      color: white;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      margin-top: 10px;
+      font-size: 13px;
     }
 
     #status {
       margin-top: 12px;
       font-size: 14px;
-      opacity: 0.85;
+      opacity: 0.9;
+    }
+
+    hr {
+      margin: 20px 0;
+      opacity: 0.2;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="card">
-    <h2>🔥 PulseX Airdrop</h2>
-    <p>Daily Claim: <b>100 Points</b></p>
-    <button id="claimBtn">CLAIM</button>
-<div id="status">Waiting...</div>
+<div class="card">
+  <h2>🔥 PulseX Airdrop</h2>
+  <p>Daily Claim: <b>100 Points</b></p>
 
-<hr style="margin:20px 0; opacity:0.2;">
+  <button id="claimBtn">CLAIM</button>
+  <div id="status">Waiting...</div>
 
-<h3 style="margin-bottom:8px;">🤝 Invite Friends</h3>
-<p style="font-size:13px; opacity:0.8;">
-Earn more points when friends join using your link.
-</p>
+  <hr>
 
-<input
-  id="refLink"
-  readonly
-  style="
-    width:100%;
-    padding:10px;
-    border-radius:8px;
-    border:none;
-    margin-top:10px;
-    font-size:13px;
-  "
-/>
+  <h3>🤝 Invite Friends</h3>
+  <p style="font-size:13px; opacity:0.8;">
+    Earn more points when friends join using your link.
+  </p>
 
-<button
-  id="copyBtn"
-  style="
-    background:#3b82f6;
-    color:white;
-    margin-top:10px;
-  "
->
-Copy Referral Link
-</button>
-
+  <input id="refLink" readonly />
+  <button id="copyBtn">Copy Referral Link</button>
+</div>
 
 <script>
   const statusEl = document.getElementById("status");
-  const btn = document.getElementById("claimBtn");
+  const claimBtn = document.getElementById("claimBtn");
+  const refInput = document.getElementById("refLink");
+  const copyBtn = document.getElementById("copyBtn");
 
   function getTelegramUserId() {
     if (
@@ -110,7 +114,16 @@ Copy Referral Link
     Telegram.WebApp.expand();
   }
 
-  btn.addEventListener("click", async () => {
+  // Generate referral link
+  const userId = getTelegramUserId();
+  if (userId) {
+    refInput.value = `https://t.me/pulsex_airdrop_bot?start=${userId}`;
+  } else {
+    refInput.value = "Open app via Telegram bot";
+  }
+
+  // Claim logic
+  claimBtn.addEventListener("click", async () => {
     statusEl.innerText = "⏳ Sending claim...";
 
     const userId = getTelegramUserId();
@@ -146,8 +159,14 @@ Copy Referral Link
       statusEl.innerText = "❌ Network error";
     }
   });
+
+  // Copy referral link
+  copyBtn.addEventListener("click", () => {
+    refInput.select();
+    document.execCommand("copy");
+    statusEl.innerText = "✅ Referral link copied!";
+  });
 </script>
 
 </body>
 </html>
-
